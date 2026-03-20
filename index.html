@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FitAI – Virtual Try-On & Smart Clothing Recommendations</title>
+<link href="https://fonts.googleapis.com/css2?family=Ember+Display:wght@400;700&family=Amazon+Ember:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --amz-navy: #131921;
+    --amz-blue: #232f3e;
+    --amz-orange: #febd69;
+    --amz-orange-dark: #f90;
+    --amz-teal: #00a8a2;
+    --amz-light: #f3f3f3;
+    --amz-white: #fff;
+    --amz-red: #b12704;
+    --amz-green: #007600;
+    --amz-link: #007185;
+    --amz-text: #0f1111;
+    --amz-muted: #565959;
+    --amz-border: #ddd;
+    --amz-star: #f0a500;
+    --font: 'Amazon Ember', 'Segoe UI', Arial, sans-serif;
+  }
+
+  body { font-family: var(--font); background: var(--amz-light); color: var(--amz-text); font-size: 14px; }
+  a { text-decoration: none; color: inherit; }
+
+  /* ── TOP BANNER ── */
+  .top-banner {
+    background: var(--amz-teal);
+    color: #fff;
+    text-align: center;
+    font-size: 13px;
+    padding: 6px 16px;
+    font-weight: 500;
+    letter-spacing: .02em;
+  }
+  .top-banner span { background: var(--amz-orange-dark); color: #131921; font-weight: 700; padding: 2px 8px; border-radius: 3px; margin-left: 8px; }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--amz-navy);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    flex-wrap: wrap;
+  }
+  .logo {
+    display: flex;
+    flex-direction: column;
+    border: 1.5px solid transparent;
+    padding: 4px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: border-color .15s;
+    flex-shrink: 0;
+  }
+  .logo:hover { border-color: #fff; }
+  .logo-name { font-size: 22px; font-weight: 700; color: #fff; letter-spacing: -1px; line-height: 1; }
+  .logo-name span { color: var(--amz-orange); }
+  .logo-sub { font-size: 10px; color: var(--amz-orange); letter-spacing: .5px; margin-top: 1px; }
+
+  .deliver-to {
+    color: #ccc;
+    font-size: 12px;
+    border: 1.5px solid transparent;
+    padding: 4px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: border-color .15s;
+    flex-shrink: 0;
+  }
+  .deliver-to:hover { border-color: #fff; }
+  .deliver-to b { color: #fff; font-size: 13px; display: block; }
+
+  .search-bar {
+    flex: 1;
+    display: flex;
+    min-width: 200px;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .search-cat {
+    background: #f3f3f3;
+    border: none;
+    padding: 0 10px;
+    font-size: 12px;
+    cursor: pointer;
+    border-right: 1px solid #ddd;
+    color: #131921;
+    min-width: 90px;
+  }
+  .search-input {
+    flex: 1;
+    border: none;
+    padding: 8px 12px;
+    font-size: 14px;
+    outline: none;
+    font-family: var(--font);
+  }
+  .search-btn {
+    background: var(--amz-orange);
+    border: none;
+    padding: 0 14px;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--amz-navy);
+    transition: background .15s;
+  }
+  .search-btn:hover { background: var(--amz-orange-dark); }
+
+  .header-actions {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .hdr-btn {
+    color: #fff;
+    border: 1.5px solid transparent;
+    border-radius: 3px;
+    padding: 6px 10px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: border-color .15s;
+    line-height: 1.3;
+    text-align: center;
+  }
+  .hdr-btn:hover { border-color: #fff; }
+  .hdr-btn small { color: #ccc; font-size: 11px; display: block; }
+  .hdr-btn b { font-size: 13px; }
+  .cart-btn { display: flex; align-items: center; gap: 6px; }
+  .cart-count {
+    background: var(--amz-orange-dark);
+    color: #131921;
+    font-weight: 700;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    margin-top: -6px;
+  }
+
+  /* ── NAV BAR ── */
+  nav {
+    background: var(--amz-blue);
+    display: flex;
+    gap: 2px;
+    padding: 6px 16px;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  nav::-webkit-scrollbar { display: none; }
+  .nav-item {
+    color: #fff;
+    font-size: 13px;
+    padding: 4px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: border-color .15s;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .nav-item:hover { border-color: #fff; }
+  .nav-item.bold { font-weight: 700; }
+
+  /* ── HERO CAROUSEL ── */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    background: var(--amz-navy);
+    height: 360px;
+  }
+  .hero-slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    opacity: 0;
+    transition: opacity .6s;
+    padding: 40px 80px;
+  }
+  .hero-slide.active { opacity: 1; }
+  .hero-slide-1 { background: linear-gradient(110deg, #0d1f33 40%, #1a3a5c); }
+  .hero-slide-2 { background: linear-gradient(110deg, #1a0a00 40%, #3d1a00); }
+  .hero-slide-3 { background: linear-gradient(110deg, #001a15 40%, #003d30); }
+
+  .hero-content { flex: 1; z-index: 2; }
+  .hero-badge {
+    display: inline-block;
+    background: var(--amz-orange-dark);
+    color: #131921;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 3px;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .hero-title { font-size: 32px; font-weight: 700; color: #fff; line-height: 1.2; margin-bottom: 10px; }
+  .hero-title span { color: var(--amz-orange); }
+  .hero-desc { color: #aec6cf; font-size: 15px; line-height: 1.6; margin-bottom: 22px; max-width: 420px; }
+  .hero-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn-primary {
+    background: var(--amz-orange-dark);
+    color: #131921;
+    border: none;
+    padding: 10px 22px;
+    font-size: 14px;
+    font-weight: 700;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background .15s, transform .1s;
+    font-family: var(--font);
+  }
+  .btn-primary:hover { background: #e47911; transform: translateY(-1px); }
+  .btn-secondary {
+    background: transparent;
+    color: #fff;
+    border: 1.5px solid rgba(255,255,255,.4);
+    padding: 10px 22px;
+    font-size: 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: border-color .15s;
+    font-family: var(--font);
+  }
+  .btn-secondary:hover { border-color: #fff; }
+
+  .hero-visual {
+    flex-shrink: 0;
+    width: 260px;
+    height: 280px;
+    position: relative;
+  }
+  .hero-phone {
+    width: 120px;
+    height: 220px;
+    background: rgba(255,255,255,.08);
+    border: 2px solid rgba(255,255,255,.2);
+    border-radius: 18px;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 18px;
+    gap: 8px;
+    backdrop-filter: blur(4px);
+  }
+  .hero-phone-dot { width: 8px; height: 8px; background: var(--amz-orange); border-radius: 50%; }
+  .hero-phone-img { width: 80px; height: 110px; background: rgba(255,255,255,.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 32px; }
+  .hero-phone-tag { font-size: 10px; color: #fff; background: var(--amz-teal); padding: 2px 8px; border-radius: 3px; }
+  .hero-sparkle { position: absolute; width: 10px; height: 10px; background: var(--amz-orange); border-radius: 50%; animation: sparkle 2s infinite; }
+  .hero-sparkle:nth-child(1) { top: 20px; right: 30px; animation-delay: 0s; }
+  .hero-sparkle:nth-child(2) { top: 60px; left: 10px; animation-delay: .5s; }
+  .hero-sparkle:nth-child(3) { bottom: 30px; right: 10px; animation-delay: 1s; }
+  @keyframes sparkle { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.3;transform:scale(.5)} }
+
+  .hero-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255,255,255,.15);
+    border: none;
+    color: #fff;
+    width: 40px;
+    height: 60px;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10;
+    transition: background .15s;
+    border-radius: 3px;
+  }
+  .hero-arrow:hover { background: rgba(255,255,255,.3); }
+  .hero-arrow.left { left: 12px; }
+  .hero-arrow.right { right: 12px; }
+  .hero-dots { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; }
+  .hero-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.3); cursor: pointer; transition: background .2s; }
+  .hero-dot.active { background: var(--amz-orange-dark); }
+
+  /* ── MAIN CONTENT ── */
+  main { max-width: 1400px; margin: 0 auto; padding: 16px; }
+
+  /* ── CARD WIDGET ── */
+  .widget-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .widget-card {
+    background: #fff;
+    border-radius: 6px;
+    padding: 18px;
+    cursor: pointer;
+    transition: box-shadow .2s;
+    border: 1px solid #e7e7e7;
+  }
+  .widget-card:hover { box-shadow: 0 4px 18px rgba(0,0,0,.12); }
+  .widget-card h3 { font-size: 17px; font-weight: 700; color: var(--amz-text); margin-bottom: 12px; }
+  .widget-card ul { list-style: none; }
+  .widget-card ul li { font-size: 13px; color: var(--amz-link); padding: 3px 0; display: flex; align-items: center; gap: 6px; }
+  .widget-card ul li::before { content: '›'; color: var(--amz-orange-dark); font-weight: 700; font-size: 16px; }
+  .widget-card .see-more { color: var(--amz-link); font-size: 13px; margin-top: 10px; display: block; }
+  .widget-card .see-more:hover { text-decoration: underline; color: var(--amz-red); }
+
+  /* ── SECTION HEADING ── */
+  .section { background: #fff; border-radius: 6px; padding: 18px 20px; margin-bottom: 16px; border: 1px solid #e7e7e7; }
+  .section h2 { font-size: 20px; font-weight: 700; margin-bottom: 14px; color: var(--amz-text); }
+
+  /* ── PRODUCT CARDS ── */
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1px;
+    background: #e7e7e7;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .product-card {
+    background: #fff;
+    padding: 16px;
+    cursor: pointer;
+    transition: background .15s;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .product-card:hover { background: #fafafa; }
+  .product-img {
+    width: 100%;
+    aspect-ratio: 1;
+    background: var(--amz-light);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 50px;
+    margin-bottom: 6px;
+    position: relative;
+    overflow: hidden;
+  }
+  .product-badge {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    background: var(--amz-red);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 2px;
+  }
+  .product-badge.new { background: var(--amz-teal); }
+  .product-badge.prime { background: #00a8e0; }
+  .product-name { font-size: 13px; color: var(--amz-text); line-height: 1.4; }
+  .stars { color: var(--amz-star); font-size: 13px; }
+  .reviews { color: var(--amz-link); font-size: 12px; }
+  .price-row { display: flex; align-items: baseline; gap: 4px; flex-wrap: wrap; }
+  .price { font-size: 18px; font-weight: 700; color: var(--amz-red); }
+  .price sup { font-size: 12px; vertical-align: top; margin-top: 4px; }
+  .price-old { font-size: 12px; color: var(--amz-muted); text-decoration: line-through; }
+  .prime-tag { font-size: 11px; color: #00a8e0; font-weight: 700; }
+  .add-cart-btn {
+    margin-top: 6px;
+    background: var(--amz-orange-dark);
+    border: none;
+    border-radius: 20px;
+    padding: 7px 0;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: background .15s;
+    font-family: var(--font);
+    color: #131921;
+  }
+  .add-cart-btn:hover { background: #e47911; }
+
+  /* ── FEATURE STRIP ── */
+  .feature-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .feature-item {
+    background: #fff;
+    border-radius: 6px;
+    padding: 16px 12px;
+    text-align: center;
+    border: 1px solid #e7e7e7;
+    cursor: pointer;
+    transition: box-shadow .2s;
+  }
+  .feature-item:hover { box-shadow: 0 3px 12px rgba(0,0,0,.1); }
+  .feat-icon { font-size: 28px; margin-bottom: 8px; }
+  .feat-title { font-size: 13px; font-weight: 700; color: var(--amz-text); margin-bottom: 4px; }
+  .feat-sub { font-size: 11px; color: var(--amz-muted); }
+
+  /* ── CATEGORY ROW ── */
+  .cat-row {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    margin-bottom: 16px;
+  }
+  .cat-row::-webkit-scrollbar { height: 3px; }
+  .cat-row::-webkit-scrollbar-track { background: #f3f3f3; }
+  .cat-row::-webkit-scrollbar-thumb { background: var(--amz-orange); border-radius: 2px; }
+  .cat-chip {
+    flex-shrink: 0;
+    padding: 6px 14px;
+    border: 1px solid var(--amz-border);
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+    background: #fff;
+    color: var(--amz-text);
+    transition: background .15s, border-color .15s;
+  }
+  .cat-chip:hover, .cat-chip.active { background: var(--amz-orange); border-color: var(--amz-orange); color: #131921; font-weight: 600; }
+
+  /* ── VALUE PROP BANNER ── */
+  .vp-banner {
+    background: linear-gradient(135deg, #0f1923, #1e3a4f);
+    border-radius: 8px;
+    padding: 32px 36px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    flex-wrap: wrap;
+  }
+  .vp-banner h2 { font-size: 24px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+  .vp-banner p { color: #aec6cf; font-size: 14px; line-height: 1.6; max-width: 440px; }
+  .vp-stats { display: flex; gap: 24px; flex-wrap: wrap; }
+  .stat-box { text-align: center; }
+  .stat-num { font-size: 28px; font-weight: 700; color: var(--amz-orange-dark); }
+  .stat-lbl { font-size: 11px; color: #aec6cf; margin-top: 2px; }
+
+  /* ── REVENUE / PARTNERSHIP ROW ── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  @media(max-width: 600px) { .two-col { grid-template-columns: 1fr; } }
+  .info-card { background: #fff; border-radius: 6px; padding: 20px; border: 1px solid #e7e7e7; }
+  .info-card h3 { font-size: 17px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .tag-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag {
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-weight: 600;
+  }
+  .tag-orange { background: #fff3cd; color: #856404; }
+  .tag-blue   { background: #cce5ff; color: #004085; }
+  .tag-green  { background: #d4edda; color: #155724; }
+  .tag-teal   { background: #d1ecf1; color: #0c5460; }
+  .tag-red    { background: #f8d7da; color: #721c24; }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--amz-blue);
+    margin-top: 32px;
+  }
+  .footer-back {
+    background: var(--amz-navy);
+    padding: 10px;
+    text-align: center;
+    font-size: 13px;
+    color: #fff;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .footer-back:hover { background: #3a4553; }
+  .footer-cols {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 20px;
+    padding: 32px 40px;
+  }
+  .footer-col h4 { color: #fff; font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+  .footer-col ul { list-style: none; }
+  .footer-col ul li { font-size: 13px; color: #ddd; padding: 3px 0; cursor: pointer; transition: color .15s; }
+  .footer-col ul li:hover { color: #fff; }
+  .footer-bottom {
+    background: var(--amz-navy);
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    border-top: 1px solid rgba(255,255,255,.1);
+  }
+  .footer-logo { font-size: 20px; font-weight: 700; color: #fff; }
+  .footer-logo span { color: var(--amz-orange); }
+  .footer-links { display: flex; gap: 16px; flex-wrap: wrap; }
+  .footer-links a { font-size: 12px; color: #ddd; border: 1px solid rgba(255,255,255,.3); padding: 4px 10px; border-radius: 3px; transition: border-color .15s; }
+  .footer-links a:hover { border-color: #fff; color: #fff; }
+  .footer-copy { font-size: 12px; color: #aaa; text-align: center; padding: 12px; background: var(--amz-navy); }
+
+  /* ── AI TRY-ON MODAL ── */
+  .tryon-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.7);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .tryon-modal.open { display: flex; }
+  .tryon-box {
+    background: #fff;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 520px;
+    padding: 28px;
+    position: relative;
+    animation: popIn .25s ease;
+  }
+  @keyframes popIn { from { transform: scale(.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .tryon-close {
+    position: absolute;
+    top: 12px; right: 14px;
+    background: none; border: none;
+    font-size: 22px; cursor: pointer;
+    color: var(--amz-muted);
+    line-height: 1;
+  }
+  .tryon-title { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+  .tryon-sub { font-size: 13px; color: var(--amz-muted); margin-bottom: 20px; }
+  .tryon-body { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+  .tryon-avatar {
+    width: 140px;
+    height: 200px;
+    background: linear-gradient(160deg, #e8f4f8, #cfe7ef);
+    border-radius: 8px;
+    border: 2px dashed var(--amz-teal);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: var(--amz-teal);
+    gap: 6px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .tryon-avatar .icon { font-size: 32px; }
+  .tryon-fields { flex: 1; display: flex; flex-direction: column; gap: 10px; min-width: 160px; }
+  .tryon-fields label { font-size: 12px; font-weight: 600; color: var(--amz-text); display: block; margin-bottom: 3px; }
+  .tryon-fields select, .tryon-fields input {
+    width: 100%;
+    border: 1px solid var(--amz-border);
+    border-radius: 4px;
+    padding: 7px 10px;
+    font-size: 13px;
+    font-family: var(--font);
+    outline: none;
+    transition: border-color .15s;
+  }
+  .tryon-fields select:focus, .tryon-fields input:focus { border-color: var(--amz-teal); }
+  .tryon-result {
+    margin-top: 16px;
+    background: #f0faf9;
+    border: 1px solid #b2dfdb;
+    border-radius: 6px;
+    padding: 14px;
+    font-size: 13px;
+    color: #0c5460;
+    display: none;
+  }
+  .tryon-result.show { display: block; }
+  .tryon-result strong { color: var(--amz-teal); }
+
+  /* ── PRIME BANNER ── */
+  .prime-banner {
+    background: linear-gradient(90deg, #002b5c, #00a8e0);
+    border-radius: 6px;
+    padding: 20px 28px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .prime-icon { font-size: 36px; }
+  .prime-text h3 { color: #fff; font-size: 17px; font-weight: 700; }
+  .prime-text p { color: #cce5ff; font-size: 13px; margin-top: 3px; }
+  .prime-cta { margin-left: auto; }
+  .prime-btn {
+    background: #fff;
+    color: #002b5c;
+    border: none;
+    padding: 10px 22px;
+    font-size: 13px;
+    font-weight: 700;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: var(--font);
+    transition: background .15s;
+  }
+  .prime-btn:hover { background: #cce5ff; }
+</style>
+</head>
+<body>
+
+<!-- TOP BANNER -->
+<div class="top-banner">
+  🎉 Introducing AI Virtual Try-On — See how clothes look on YOU before buying!
+  <span>Try Now FREE</span>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo" title="FitAI Home">
+    <div class="logo-name">Fit<span>AI</span></div>
+    <div class="logo-sub">.in</div>
+  </div>
+
+  <div class="deliver-to">
+    <small>Deliver to</small>
+    <b>📍 Delhi 110001</b>
+  </div>
+
+  <div class="search-bar">
+    <select class="search-cat">
+      <option>All Clothing</option>
+      <option>Men's Fashion</option>
+      <option>Women's Fashion</option>
+      <option>Kids Wear</option>
+      <option>Ethnic Wear</option>
+      <option>Sportswear</option>
+    </select>
+    <input class="search-input" type="text" placeholder="Search for clothes, styles, brands…" id="search-input">
+    <button class="search-btn" onclick="handleSearch()">🔍</button>
+  </div>
+
+  <div class="header-actions">
+    <div class="hdr-btn">
+      <small>Hello, Sign In</small>
+      <b>Account &amp; Lists ▾</b>
+    </div>
+    <div class="hdr-btn">
+      <small>Returns</small>
+      <b>&amp; Orders</b>
+    </div>
+    <div class="hdr-btn cart-btn" onclick="alert('🛒 Your cart is empty. Start shopping!')">
+      🛒
+      <div>
+        <div class="cart-count">3</div>
+        <b>Cart</b>
+      </div>
+    </div>
+    <button class="btn-primary" style="padding:8px 14px;font-size:13px;" onclick="openTryOn()">🪞 Try On AI</button>
+  </div>
+</header>
+
+<!-- NAV BAR -->
+<nav>
+  <div class="nav-item bold">☰ All</div>
+  <div class="nav-item bold" style="color: var(--amz-orange);">🔥 Today's Deals</div>
+  <div class="nav-item">Men's Fashion</div>
+  <div class="nav-item">Women's Fashion</div>
+  <div class="nav-item">Kids Wear</div>
+  <div class="nav-item">Ethnic &amp; Festive</div>
+  <div class="nav-item">Sportswear</div>
+  <div class="nav-item">Footwear</div>
+  <div class="nav-item">Accessories</div>
+  <div class="nav-item" style="color: var(--amz-orange);">🤖 AI Stylist</div>
+  <div class="nav-item">Brand Store</div>
+  <div class="nav-item">Premium</div>
+  <div class="nav-item">FitAI Premium</div>
+</nav>
+
+<!-- HERO CAROUSEL -->
+<div class="hero">
+  <!-- Slide 1 -->
+  <div class="hero-slide slide active" id="slide-0">
+    <div class="hero-content">
+      <div class="hero-badge">🆕 New Feature</div>
+      <div class="hero-title">AI Virtual<br><span>Try-On Technology</span></div>
+      <div class="hero-desc">Upload your photo or enter your measurements. Our AI shows exactly how any outfit will look on your body — before you buy.</div>
+      <div class="hero-btns">
+        <button class="btn-primary" onclick="openTryOn()">🪞 Try It Now</button>
+        <button class="btn-secondary">Learn More</button>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-sparkle"></div>
+      <div class="hero-sparkle"></div>
+      <div class="hero-sparkle"></div>
+      <div class="hero-phone">
+        <div class="hero-phone-dot"></div>
+        <div class="hero-phone-img">👗</div>
+        <div class="hero-phone-tag">✓ Perfect Fit</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 2 -->
+  <div class="hero-slide slide" id="slide-1">
+    <div class="hero-content">
+      <div class="hero-badge">Smart Recommendations</div>
+      <div class="hero-title">Your Personal<br><span>AI Stylist</span></div>
+      <div class="hero-desc">Get outfit suggestions curated by AI that knows your taste, body type, and budget. Never overthink what to wear again.</div>
+      <div class="hero-btns">
+        <button class="btn-primary">🤖 Get Styled</button>
+        <button class="btn-secondary">View Lookbook</button>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-phone" style="background:rgba(255,150,0,.1);border-color:rgba(255,150,0,.3)">
+        <div class="hero-phone-dot" style="background:#f90"></div>
+        <div class="hero-phone-img">🎨</div>
+        <div class="hero-phone-tag" style="background:#f90;color:#131921">AI Pick</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 3 -->
+  <div class="hero-slide slide" id="slide-2">
+    <div class="hero-content">
+      <div class="hero-badge">Zero Returns Guarantee</div>
+      <div class="hero-title">Shop with<br><span>100% Confidence</span></div>
+      <div class="hero-desc">Our size recommendation engine has helped reduce wrong purchases by 80%. Know your exact size across 500+ brands.</div>
+      <div class="hero-btns">
+        <button class="btn-primary">📏 Find My Size</button>
+        <button class="btn-secondary">See How It Works</button>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-phone" style="background:rgba(0,168,162,.1);border-color:rgba(0,168,162,.3)">
+        <div class="hero-phone-dot" style="background:#00a8a2"></div>
+        <div class="hero-phone-img">📏</div>
+        <div class="hero-phone-tag" style="background:#00a8a2">Size XL → L ✓</div>
+      </div>
+    </div>
+  </div>
+
+  <button class="hero-arrow left" onclick="changeSlide(-1)">‹</button>
+  <button class="hero-arrow right" onclick="changeSlide(1)">›</button>
+  <div class="hero-dots">
+    <div class="hero-dot active" onclick="goSlide(0)"></div>
+    <div class="hero-dot" onclick="goSlide(1)"></div>
+    <div class="hero-dot" onclick="goSlide(2)"></div>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<main>
+
+  <!-- FEATURE STRIP -->
+  <div class="feature-strip" style="margin-top:16px;">
+    <div class="feature-item" onclick="openTryOn()">
+      <div class="feat-icon">🪞</div>
+      <div class="feat-title">Virtual Try-On</div>
+      <div class="feat-sub">See it on you first</div>
+    </div>
+    <div class="feature-item">
+      <div class="feat-icon">📏</div>
+      <div class="feat-title">Smart Size Finder</div>
+      <div class="feat-sub">Never return again</div>
+    </div>
+    <div class="feature-item">
+      <div class="feat-icon">🤖</div>
+      <div class="feat-title">AI Outfit Builder</div>
+      <div class="feat-sub">Complete looks in seconds</div>
+    </div>
+    <div class="feature-item">
+      <div class="feat-icon">⚡</div>
+      <div class="feat-title">Express Delivery</div>
+      <div class="feat-sub">Same-day in metro cities</div>
+    </div>
+    <div class="feature-item">
+      <div class="feat-icon">🔁</div>
+      <div class="feat-title">Easy Returns</div>
+      <div class="feat-sub">30-day hassle-free</div>
+    </div>
+    <div class="feature-item">
+      <div class="feat-icon">🔒</div>
+      <div class="feat-title">Secure Payments</div>
+      <div class="feat-sub">UPI, Cards, COD</div>
+    </div>
+  </div>
+
+  <!-- BMC WIDGET CARDS -->
+  <div class="widget-grid">
+    <div class="widget-card">
+      <h3>👥 For You</h3>
+      <ul>
+        <li>Online clothing shoppers</li>
+        <li>Fashion-conscious students</li>
+        <li>Size-confused shoppers</li>
+        <li>E-commerce retailers</li>
+      </ul>
+      <a class="see-more" href="#">See personalized picks ›</a>
+    </div>
+    <div class="widget-card">
+      <h3>💡 Why FitAI?</h3>
+      <ul>
+        <li>Accurate size recommendations</li>
+        <li>Virtual try-on before buying</li>
+        <li>Personalized outfit picks</li>
+        <li>Fewer returns, saves time</li>
+      </ul>
+      <a class="see-more" href="#">Explore features ›</a>
+    </div>
+    <div class="widget-card">
+      <h3>📱 Shop Via</h3>
+      <ul>
+        <li>FitAI Mobile App</li>
+        <li>FitAI Website</li>
+        <li>Social media shops</li>
+        <li>Brand partner stores</li>
+      </ul>
+      <a class="see-more" href="#">Download app ›</a>
+    </div>
+    <div class="widget-card">
+      <h3>💬 We're Here</h3>
+      <ul>
+        <li>Personalized AI account</li>
+        <li>24/7 AI chat support</li>
+        <li>Style alerts &amp; notifications</li>
+        <li>Feedback &amp; reviews</li>
+      </ul>
+      <a class="see-more" href="#">Contact us ›</a>
+    </div>
+  </div>
+
+  <!-- CATEGORY CHIPS -->
+  <div class="cat-row">
+    <div class="cat-chip active">All</div>
+    <div class="cat-chip">Men's Tops</div>
+    <div class="cat-chip">Women's Kurtas</div>
+    <div class="cat-chip">Jeans &amp; Trousers</div>
+    <div class="cat-chip">Ethnic Wear</div>
+    <div class="cat-chip">Dresses</div>
+    <div class="cat-chip">Activewear</div>
+    <div class="cat-chip">Outerwear</div>
+    <div class="cat-chip">Footwear</div>
+    <div class="cat-chip">Accessories</div>
+    <div class="cat-chip">Premium Brands</div>
+    <div class="cat-chip">Under ₹999</div>
+  </div>
+
+  <!-- TRENDING PRODUCTS -->
+  <div class="section">
+    <h2>🔥 Trending — AI Picks for You</h2>
+    <div class="products-grid">
+
+      <div class="product-card">
+        <div class="product-img">
+          👗
+          <div class="product-badge new">New</div>
+        </div>
+        <div class="product-name">Floral Wrap Dress — Summer Collection 2025</div>
+        <div class="stars">★★★★★</div>
+        <div class="reviews">(2,341 reviews)</div>
+        <div class="price-row">
+          <div class="price"><sup>₹</sup>1,299</div>
+          <div class="price-old">₹2,499</div>
+          <div style="color:var(--amz-red);font-size:12px;font-weight:700;">48% off</div>
+        </div>
+        <div class="prime-tag">✔ Prime</div>
+        <button class="add-cart-btn" onclick="addCart('Floral Wrap Dress')">Add to Cart</button>
+      </div>
+
+      <div class="product-card">
+        <div class="product-img">
+          👔
+          <div class="product-badge" style="background:var(--amz-orange-dark);color:#131921;">Deal</div>
+        </div>
+        <div class="product-name">Men's Slim Fit Oxford Shirt — 6 Colours</div>
+        <div class="stars">★★★★☆</div>
+        <div class="reviews">(1,890 reviews)</div>
+        <div class="price-row">
+          <div class="price"><sup>₹</sup>799</div>
+          <div class="price-old">₹1,499</div>
+          <div style="color:var(--amz-red);font-size:12px;font-weight:700;">47% off</div>
+        </div>
+        <div class="prime-tag">✔ Prime</div>
+        <button class="add-cart-btn" onclick="addCart('Oxford Shirt')">Add to Cart</button>
+      </div>
+
+      <div class="product-card">
+        <div class="product-img">
+          🧥
+          <div class="product-badge prime">Prime</div>
+        </div>
+        <div class="product-name">Women's Oversized Denim Jacket — Vintage Wash</div>
+        <div class="stars">★★★★★</div>
+        <div class="reviews">(3,102 reviews)</div>
+        <div class="price-row">
+          <div class="price"><sup>₹</sup>2,199</div>
+          <div class="price-old">₹3,999</div>
+          <div style="color:var(--amz-red);font-size:12px;font-weight:700;">45% off</div>
+        </div>
+        <div class="prime-tag">✔ Prime</div>
+        <button class="add-cart-btn" onclick="addCart('Denim Jacket')">Add to Cart</button>
+      </div>
+
+      <div class="product-card">
+        <div class="product-img">👖</div>
+        <div class="product-name">Men's Stretch Chinos — 4 Colours AI Recommended</div>
+        <div class="stars">★★★★☆</div>
+        <div class="reviews">(987 reviews)</div>
+        <div class="price-row">
+          <div class="price"><sup>₹</sup>1,099</div>
+          <div class="price-old">₹1,899</div>
+          <div style="color:var(--amz-red);font-size:12px;font-weight:700;">42% off</div>
+        </div>
+        <div class="prime-tag">✔ Prime</div>
+        <button class="add-cart-btn" onclick="addCart('Stretch Chinos')">Add to Cart</button>
+      </div>
+
+      <div class="product-card">
+        <div class="product-img">
+          👘
+          <div class="product-badge new">New</div>
+        </div>
+        <div class="product-name">Women's Embroidered Kurta Set — Festive Edition</div>
+        <div class="stars">★★★★★</div>
+        <div class="reviews">(4,560 reviews)</div>
+        <div class="price-row">
+          <div class="price"><sup>₹</sup>1,799</div>
+          <div class="price-old">₹3,500</div>
+          <div style="color:var(--amz-red);font-size:12px;font-weight:700;">49% off</div>
+        </div>
+        <div class="prime-tag">✔ Prime</div>
+        <button class="add-cart-btn" onclick="addCart('Kurta Set')">Add to Cart</button>
+      </div>
+
+      <div class="product-card">
+        <div class="product-img">👟</div>
+        <div class="product-name">Unisex Casual Sneakers — AI Outfit Match</div>
+        <div class="stars">★★★★☆</div>
+        <div class="reviews">(2,210 reviews)</div>
+        <div class="price-row">
+          <div class="price"><sup>₹</sup>1,499</div>
+          <div class="price-old">₹2,999</div>
+          <div style="color:var(--amz-red);font-size:12px;font-weight:700;">50% off</div>
+        </div>
+        <div class="prime-tag">✔ Prime</div>
+        <button class="add-cart-btn" onclick="addCart('Sneakers')">Add to Cart</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- VALUE PROP BANNER -->
+  <div class="vp-banner">
+    <div>
+      <h2>Why Millions Choose FitAI</h2>
+      <p>Our platform is built on real intelligence — accurate body measurements, deep learning fashion AI, and partnerships with 500+ top brands to ensure you always look your best.</p>
+    </div>
+    <div class="vp-stats">
+      <div class="stat-box">
+        <div class="stat-num">80%</div>
+        <div class="stat-lbl">Fewer Returns</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">500+</div>
+        <div class="stat-lbl">Brand Partners</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">2M+</div>
+        <div class="stat-lbl">Happy Shoppers</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">4.8★</div>
+        <div class="stat-lbl">App Rating</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRIME BANNER -->
+  <div class="prime-banner">
+    <div class="prime-icon">⭐</div>
+    <div class="prime-text">
+      <h3>FitAI Premium — Unlock Your Full AI Wardrobe</h3>
+      <p>Advanced styling suggestions, unlimited try-ons, priority delivery, exclusive brand access, and a dedicated AI stylist — all for ₹199/month.</p>
+    </div>
+    <div class="prime-cta">
+      <button class="prime-btn">Try Premium FREE 30 Days</button>
+    </div>
+  </div>
+
+  <!-- REVENUE & PARTNERSHIPS -->
+  <div class="two-col">
+    <div class="info-card">
+      <h3>💰 How We Earn</h3>
+      <div class="tag-list">
+        <span class="tag tag-orange">Affiliate Commissions</span>
+        <span class="tag tag-blue">Premium Subscriptions</span>
+        <span class="tag tag-green">Brand Advertising</span>
+        <span class="tag tag-teal">Brand Partnership Fees</span>
+        <span class="tag tag-red">Promoted Listings</span>
+      </div>
+    </div>
+    <div class="info-card">
+      <h3>🤝 Our Partners</h3>
+      <div class="tag-list">
+        <span class="tag tag-blue">Online Retailers</span>
+        <span class="tag tag-orange">Fashion Brands</span>
+        <span class="tag tag-green">Affiliate Networks</span>
+        <span class="tag tag-teal">Cloud Providers</span>
+        <span class="tag tag-red">Payment Gateways</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- KEY RESOURCES & ACTIVITIES -->
+  <div class="two-col">
+    <div class="info-card">
+      <h3>⚙️ Key Resources</h3>
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:7px">
+        <li style="font-size:13px;display:flex;align-items:center;gap:8px"><span style="color:var(--amz-orange-dark);font-weight:700;">→</span> Software platform (App &amp; Website)</li>
+        <li style="font-size:13px;display:flex;align-items:center;gap:8px"><span style="color:var(--amz-orange-dark);font-weight:700;">→</span> AI recommendation &amp; image processing engine</li>
+        <li style="font-size:13px;display:flex;align-items:center;gap:8px"><span style="color:var(--amz-orange-dark);font-weight:700;">→</span> Fashion product database (1M+ items)</li>
+        <li style="font-size:13px;display:flex;align-items:center;gap:8px"><span style="color:var(--amz-orange-dark);font-weight:700;">→</span> Expert development team</li>
+      </ul>
+    </div>
+    <div class="info-card">
+      <h3>🏃 Key Activities</h3>
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:7px">
+        <li style="font-size:13px;display:flex;align-items:center;gap:8px"><span style="color:var(--amz-teal);font-weight:700;">→</span> Platform development &amp; maintenance</li>
+        <li style="font-size:13px;display:flex;align-items:center;gap:8px"><span style="color:var(--amz-teal);font-weight:700;">→</span> Improving recommendation algorithms</li>
+        <li style="font-size:13px;display:flex;align-items:center;gap:8px"><span style="color:var(--amz-teal);font-weight:700;">→</span> Managing brand partnerships</li>
+        <li style="font-size:13px;display:flex;align-items:center;gap:8px"><span style="color:var(--amz-teal);font-weight:700;">→</span> Marketing &amp; user acquisition</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- COST STRUCTURE -->
+  <div class="section">
+    <h2>📊 Cost Structure Overview</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:4px">
+      <div style="background:#fff8ee;border:1px solid #ffd591;border-radius:6px;padding:14px;text-align:center">
+        <div style="font-size:22px;margin-bottom:4px">💻</div>
+        <div style="font-size:12px;font-weight:700;color:#7c4a00">Software Dev &amp; Maintenance</div>
+      </div>
+      <div style="background:#e6f7ff;border:1px solid #91d5ff;border-radius:6px;padding:14px;text-align:center">
+        <div style="font-size:22px;margin-bottom:4px">☁️</div>
+        <div style="font-size:12px;font-weight:700;color:#003a8c">Cloud Hosting &amp; Storage</div>
+      </div>
+      <div style="background:#f6ffed;border:1px solid #b7eb8f;border-radius:6px;padding:14px;text-align:center">
+        <div style="font-size:22px;margin-bottom:4px">📣</div>
+        <div style="font-size:12px;font-weight:700;color:#135200">Marketing &amp; Advertising</div>
+      </div>
+      <div style="background:#fff0f6;border:1px solid #ffadd2;border-radius:6px;padding:14px;text-align:center">
+        <div style="font-size:22px;margin-bottom:4px">👩‍💼</div>
+        <div style="font-size:12px;font-weight:700;color:#780050">Staff Salaries</div>
+      </div>
+      <div style="background:#f9f0ff;border:1px solid #d3adf7;border-radius:6px;padding:14px;text-align:center">
+        <div style="font-size:22px;margin-bottom:4px">🔧</div>
+        <div style="font-size:12px;font-weight:700;color:#391085">Platform Updates</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-back" onclick="window.scrollTo({top:0,behavior:'smooth'})">▲ Back to top</div>
+  <div class="footer-cols">
+    <div class="footer-col">
+      <h4>Get to Know Us</h4>
+      <ul>
+        <li>About FitAI</li>
+        <li>AI Technology</li>
+        <li>Careers</li>
+        <li>Press Releases</li>
+        <li>Investor Relations</li>
+        <li>Sustainability</li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Connect with Us</h4>
+      <ul>
+        <li>Facebook</li>
+        <li>Instagram</li>
+        <li>Twitter / X</li>
+        <li>YouTube Lookbook</li>
+        <li>Pinterest</li>
+        <li>TikTok Shop</li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Make Money with Us</h4>
+      <ul>
+        <li>Sell on FitAI</li>
+        <li>Brand Partnerships</li>
+        <li>Affiliate Program</li>
+        <li>Advertise Products</li>
+        <li>Style Creator Program</li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>FitAI Payment</h4>
+      <ul>
+        <li>UPI Payments</li>
+        <li>FitAI Pay Later</li>
+        <li>EMI Options</li>
+        <li>Gift Cards</li>
+        <li>Reload Balance</li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Help &amp; Support</h4>
+      <ul>
+        <li>Your Account</li>
+        <li>Returns Centre</li>
+        <li>Size Guide</li>
+        <li>App Download</li>
+        <li>Track Order</li>
+        <li>Shipping Rates</li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-logo">Fit<span>AI</span>.in</div>
+    <div class="footer-links">
+      <a href="#">Conditions of Use</a>
+      <a href="#">Privacy Notice</a>
+      <a href="#">Interest-Based Ads</a>
+    </div>
+  </div>
+  <div class="footer-copy">© 2025 FitAI Technologies Pvt. Ltd. All rights reserved. | AI-Assisted Virtual Try-On & Smart Clothing Recommendation Platform</div>
+</footer>
+
+<!-- AI TRY-ON MODAL -->
+<div class="tryon-modal" id="tryon-modal">
+  <div class="tryon-box">
+    <button class="tryon-close" onclick="closeTryOn()">×</button>
+    <div class="tryon-title">🪞 AI Virtual Try-On</div>
+    <div class="tryon-sub">Enter your details and our AI will recommend the perfect size and show how it looks on you.</div>
+    <div class="tryon-body">
+      <div class="tryon-avatar" onclick="alert('📸 Camera access would open here in the live app!')">
+        <div class="icon">📸</div>
+        <div>Upload Photo</div>
+        <div style="color:#aaa;font-size:10px">or use camera</div>
+      </div>
+      <div class="tryon-fields">
+        <div>
+          <label>Height</label>
+          <select id="try-height">
+            <option>Select height</option>
+            <option>Below 5'0" (152cm)</option>
+            <option>5'0"–5'3" (152–160cm)</option>
+            <option>5'4"–5'7" (162–170cm)</option>
+            <option>5'8"–5'11" (172–180cm)</option>
+            <option>6'0"+ (183cm+)</option>
+          </select>
+        </div>
+        <div>
+          <label>Weight (kg)</label>
+          <input type="number" id="try-weight" placeholder="e.g. 65" min="30" max="150">
+        </div>
+        <div>
+          <label>Body Type</label>
+          <select id="try-body">
+            <option>Select body type</option>
+            <option>Slim / Athletic</option>
+            <option>Regular / Average</option>
+            <option>Plus Size</option>
+            <option>Petite</option>
+          </select>
+        </div>
+        <div>
+          <label>Gender</label>
+          <select id="try-gender">
+            <option>Prefer not to say</option>
+            <option>Male</option>
+            <option>Female</option>
+            <option>Non-binary</option>
+          </select>
+        </div>
+        <button class="btn-primary" style="width:100%;margin-top:4px" onclick="runTryOn()">🤖 Get AI Recommendation</button>
+      </div>
+    </div>
+    <div class="tryon-result" id="tryon-result">
+      <strong>✅ AI Size Recommendation Ready!</strong><br><br>
+      Based on your measurements, we recommend <strong>Size M (Medium)</strong> for most brands on FitAI.<br><br>
+      For fitted styles → <strong>M</strong> &nbsp;|&nbsp; For relaxed fit → <strong>L</strong><br><br>
+      🎯 <em>This recommendation has a 96% accuracy rate based on 2M+ user profiles.</em>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Hero carousel
+  let currentSlide = 0;
+  const slides = document.querySelectorAll('.slide');
+  const dots = document.querySelectorAll('.hero-dot');
+
+  function goSlide(n) {
+    slides[currentSlide].classList.remove('active');
+    dots[currentSlide].classList.remove('active');
+    currentSlide = (n + slides.length) % slides.length;
+    slides[currentSlide].classList.add('active');
+    dots[currentSlide].classList.add('active');
+  }
+  function changeSlide(dir) { goSlide(currentSlide + dir); }
+  setInterval(() => changeSlide(1), 5000);
+
+  // Cart interaction
+  let cartCount = 3;
+  function addCart(name) {
+    cartCount++;
+    document.querySelector('.cart-count').textContent = cartCount;
+    const btn = event.target;
+    btn.textContent = '✓ Added!';
+    btn.style.background = '#007600';
+    btn.style.color = '#fff';
+    setTimeout(() => {
+      btn.textContent = 'Add to Cart';
+      btn.style.background = '';
+      btn.style.color = '';
+    }, 1800);
+  }
+
+  // Try-on modal
+  function openTryOn() {
+    document.getElementById('tryon-modal').classList.add('open');
+    document.getElementById('tryon-result').classList.remove('show');
+  }
+  function closeTryOn() {
+    document.getElementById('tryon-modal').classList.remove('open');
+  }
+  function runTryOn() {
+    const h = document.getElementById('try-height').value;
+    const w = document.getElementById('try-weight').value;
+    const b = document.getElementById('try-body').value;
+    if (h === 'Select height' || !w || b === 'Select body type') {
+      alert('Please fill in all fields to get your AI recommendation!');
+      return;
+    }
+    document.getElementById('tryon-result').classList.add('show');
+    document.getElementById('tryon-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // Search
+  function handleSearch() {
+    const q = document.getElementById('search-input').value.trim();
+    if (q) alert('🔍 Searching for: "' + q + '"\n\nIn the full app, AI-powered results would appear here!');
+    else alert('Please enter a search term.');
+  }
+  document.getElementById('search-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleSearch();
+  });
+
+  // Category chips
+  document.querySelectorAll('.cat-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+    });
+  });
+
+  // Close modal on backdrop
+  document.getElementById('tryon-modal').addEventListener('click', e => {
+    if (e.target === document.getElementById('tryon-modal')) closeTryOn();
+  });
+</script>
+</body>
+</html>
